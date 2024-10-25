@@ -1,22 +1,34 @@
 "use client";
-import { useState } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
+import { useRouter } from 'next/navigation'; 
 
 export default function Register() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
+    const router = useRouter();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setMessage(''); // Clear previous messages
         try {
-            const response = await axios.post('http://localhost:8000/signup', { email, password });
-            setMessage(response.data.message);
+            const response = await axios.post('http://localhost:8000/register', {
+                email,
+                password,
+            });
+            
+            if (response.data.message === 'User registered successfully') {
+                router.push("/login"); // Redirect to login after successful registration
+            }
         } catch (err) {
-            setMessage('User already exists');
+            // Handle error messages more gracefully
+            setMessage(err.response?.data?.detail || 'Registration failed. Please try again.');
+            console.error("Registration error:", err);
         }
     };
-
+    
+    
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100">
             <div className="bg-white rounded-lg shadow-lg p-8 w-96">

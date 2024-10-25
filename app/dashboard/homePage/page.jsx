@@ -1,5 +1,5 @@
 "use client";
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 
@@ -21,6 +21,21 @@ const StrategyTemplate = ({ name, successRate}) => {
   const doughnutOptions = {
     cutout: '70%', // Makes the chart a ring/doughnut by cutting out the center
   };
+
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch("http://127.0.0.1:8000/");
+        const data = await response.json();  // Convert the response to JSON
+        console.log(data);  // Log the data
+      } catch (error) {
+        console.error("Error fetching data:", error);  // Handle error
+      }
+    };
+
+    fetchData();  // Call the async function
+  }, []);  // Empty dependency array ensures it runs only once on mount
 
   return (
     <div className="bg-blue-500">

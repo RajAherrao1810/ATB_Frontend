@@ -1,18 +1,31 @@
 "use client";
 import { useState } from 'react';
 import axios from 'axios';
+import { useRouter } from 'next/navigation'
+
 
 export default function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const router = useRouter();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        console.log("email: " + email);
+    
         try {
-            const response = await axios.post('http://localhost:8000/login', { email, password });
-            console.log(response.data);
+            // Use query parameters for GET request
+            const response = await axios.get('http://localhost:8000/login', {
+                    email: email,
+                    password: password
+                
+            });
+    
             if (response.data.message === 'Login successful') {
+                // console.log("logged in");
+                // window.push("/homepage")
+                router.push("/dashboard/homePage")
                 // Redirect to dashboard or other page on successful login
             } else {
                 setError('Invalid credentials');
@@ -21,6 +34,9 @@ export default function Login() {
             setError('Invalid credentials');
         }
     };
+    
+
+
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100">

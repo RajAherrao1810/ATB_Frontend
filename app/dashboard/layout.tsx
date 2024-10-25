@@ -33,8 +33,7 @@ export default function DashboardLayout({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   return (
-    <html lang="en">
-      <body
+      <div
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <div className="dashboard-container min-h-screen bg-gray-100">
@@ -129,7 +128,6 @@ export default function DashboardLayout({
             <div className="mt-6">{children}</div>
           </main>
         </div>
-      </body>
-    </html>
+      </div>
   );
 }

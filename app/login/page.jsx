@@ -12,11 +12,9 @@ export default function Login() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("email: " + email);
-    
         try {
             // Use query parameters for GET request
-            const response = await axios.get('http://localhost:8000/login', {
+            const response = await axios.post('http://localhost:8000/login', {
                     email: email,
                     password: password
                 

@@ -1,6 +1,8 @@
 "use client";
 import { useState, useCallback } from "react";
 import Link from "next/link";
+import axios from "axios";
+import { useRouter } from 'next/navigation'
 
 const instruments = ["Nifty", "BankNifty", "Sensex", "MidCpNifty", "Bankex"];
 const expiries = {
@@ -58,7 +60,9 @@ const LegForm = ({ leg, index, handleLegChange, handleDeleteLeg, expiries }) => 
   </div>
 );
 
+
 const CreateStrategy = () => {
+  const router = useRouter();
   const [strategy, setStrategy] = useState({
     strategyName: "",
     description: "",
@@ -115,9 +119,22 @@ const CreateStrategy = () => {
     [strategy.legs]
   );
 
-  const handleSubmit = (e) => {
+
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Strategy Created:", strategy);
+    console.log("Submitting strategy:", strategy);
+  
+    try {
+      const response = await axios.post("http://localhost:8000/create_strategy", strategy);
+      const { id } = response.data;
+      console.log("Strategy Created:");
+  
+      // Pass the `id` to MyStrategiesPage
+      router.push(`/dashboard/strategies/my_strategies?strategyId=${id}`);
+    } catch (error) {
+      console.error("Error creating strategy:", error);
+    }
   };
 
   return (
@@ -211,6 +228,18 @@ const CreateStrategy = () => {
               />
             </div>
           </div>
+        </div>
+
+        {/* Strategy Name Input */}
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-bold mb-2">Strategy Name</label>
+          <input
+            type="text"
+            value={strategy.strategyName}
+            onChange={(e) => handleChange("strategyName", e.target.value)}
+            placeholder="Enter strategy name"
+            className="shadow border rounded py-2 px-3 text-gray-700 focus:outline-none w-full"
+          />
         </div>
 
         <div className="flex items-center justify-between">

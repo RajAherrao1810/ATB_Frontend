@@ -14,18 +14,17 @@ const MyStrategiesPage = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [menuOpen, setMenuOpen] = useState(null); // To track which menu is open
 
   useEffect(() => {
     const fetchStrategy = async () => {
       if (!strategyId) return;
-
       if (strategies.some((strategy) => strategy._id === strategyId)) return;
 
       try {
         setLoading(true);
         const response = await axios.get(`http://localhost:8000/strategy/${strategyId}`);
         const newStrategy = response.data.strategy;
-
         const updatedStrategies = [...strategies, newStrategy];
         setStrategies(updatedStrategies);
         localStorage.setItem("strategies", JSON.stringify(updatedStrategies));
@@ -40,64 +39,128 @@ const MyStrategiesPage = () => {
     fetchStrategy();
   }, [strategyId, strategies]);
 
-  const handleDelete = (id) => {
-    const updatedStrategies = strategies.filter((strategy) => strategy._id !== id);
-    setStrategies(updatedStrategies);
-    localStorage.setItem("strategies", JSON.stringify(updatedStrategies));
+
+  const handleDelete = async (id) => {
+    try {
+      // Update local state before deleting on server
+      const updatedStrategies = strategies.filter((strategy) => strategy._id !== id);
+      setStrategies(updatedStrategies);
+      localStorage.setItem("strategies", JSON.stringify(updatedStrategies));
+      console.log(`deleted strategy`);
+  
+      // Send DELETE request to FastAPI server
+      await axios.delete(`http://localhost:8000/strategy/${id}`);
+      
+      // Close menu after deletion
+      setMenuOpen(null);
+  
+      console.log(`Strategy with ID ${id} successfully deleted from the database.`);
+    } catch (error) {
+      setError("Error deleting strategy from the server");
+      console.error("Error deleting strategy:", error);
+    }
+  };
+  
+  const handleDeploy = async (strategy) => {
+    try {
+      await axios.post("http://localhost:8000/deploy_strategy", {
+        strategyName: "",
+        description: "",
+        parameters: "",
+        selectedInstrument: "",
+        strategyType: "",
+        orderType: "",
+        entryTime: "09:15",
+        exitTime: "15:15",
+        legs: [],
+        riskManagement: {
+          profitExit: "",
+          lossExit: "",
+          exitTime: "15:15",
+        }
+      });
+      router.push(`/dashboard/strategies/deployed_strategies`);
+      console.log(`Strategy with ID ${strategy._id} deployed successfully.`);
+    } catch (error) {
+      setError("Error deploying strategy");
+      console.error("Error deploying strategy:", error);
+    }
+  };
+  
+
+  const toggleMenu = (id) => {
+    setMenuOpen(menuOpen === id ? null : id); // Toggle menu for the specific strategy
   };
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
 
   return (
-    <div style={{ padding: "2rem" }}>
-      <h1>My Strategies</h1>
+    <div className="p-8">
+      <h1 className="text-2xl font-bold mb-4">My Strategies</h1>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        {strategies.length > 0 ? (
+          strategies.map((strategy) => (
+            <div key={strategy._id} className="bg-white shadow-md rounded-lg p-6 relative border border-gray-200">
+              {/* Strategy Header with Menu */}
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">{strategy.strategyName}</h2>
+                <div className="relative">
+                  <button onClick={() => toggleMenu(strategy._id)} className="text-gray-500">
+                    &#x22EE; {/* Three dot menu */}
+                  </button>
+                  {menuOpen === strategy._id && (
+                    <div className="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                      <button
+                        onClick={() => handleDelete(strategy._id)}
+                        className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                      >
+                        Delete
+                      </button>
+                      <button
+                        onClick={() => console.log("Edit functionality to be implemented")}
+                        className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <hr className="my-3 border-gray-300" />
+              
+              {/* Strategy Details */}
+              <div className="text-sm space-y-1">
+                <p><strong>Instrument:</strong> {strategy.selectedInstrument || "N/A"}</p>
+                <p><strong>Strategy Type:</strong> {strategy.strategyType || "N/A"}</p>
+                <p><strong>Entry Time:</strong> {strategy.entryTime || "N/A"}</p>
+                <p><strong>Exit Time:</strong> {strategy.exitTime || "N/A"}</p>
+              </div>
+              <hr className="my-3 border-gray-300" />
 
-      {strategies.length > 0 ? (
-        strategies.map((strategy) => (
-          <div key={strategy._id} style={styles.strategyBox}>
-            <h2>{strategy.name}</h2>
-            {Object.entries(strategy).map(([key, value]) =>
-              key !== "_id" && key !== "name" ? (
-                <p key={key}>
-                  <strong>{key.replace(/([A-Z])/g, " $1")}: </strong>
-                  {value.toString()}
-                </p>
-              ) : null
-            )}
-            <button onClick={() => console.log(`Deploying strategy with ID: ${strategy._id}`)}>
-              Deploy Strategy
-            </button>
-            <button onClick={() => handleDelete(strategy._id)} style={styles.deleteButton}>
-              Delete Strategy
-            </button>
-          </div>
-        ))
-      ) : (
-        <p>No strategy details found.</p>
-      )}
+              {/* Deploy Button */}
+              <div className="flex space-x-2 mt-4">
+              <button
+                onClick={() => handleDeploy(strategy)}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm font-medium"
+              >
+                Deploy Strategy
+              </button>
+                <button
+                  onClick={() => console.log(`Backtesting strategy with ID: ${strategy._id}`)}
+                  className="w-full bg-blue-600 hover:bg-gray-700 text-white py-2 px-4 rounded-md text-sm font-medium"
+                >
+                  Backtest
+                </button>
+              </div>
+            </div>
+          ))
+        ) : (
+          <p>No strategy details found.</p>
+        )}
+      </div>
     </div>
   );
-};
-
-const styles = {
-  strategyBox: {
-    border: "1px solid #ddd",
-    borderRadius: "8px",
-    padding: "1rem",
-    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-    textAlign: "center",
-    marginBottom: "1rem",
-  },
-  deleteButton: {
-    marginTop: "1rem",
-    backgroundColor: "#ff4d4f",
-    color: "white",
-    border: "none",
-    padding: "0.5rem 1rem",
-    cursor: "pointer",
-    borderRadius: "4px",
-  },
 };
 
 export default MyStrategiesPage;

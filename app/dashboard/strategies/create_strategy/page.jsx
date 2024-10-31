@@ -13,52 +13,73 @@ const expiries = {
 
 // Reusable Leg Form Component
 const LegForm = ({ leg, index, handleLegChange, handleDeleteLeg, expiries }) => (
-  <div className="flex items-center space-x-4 mb-2">
-    {[
-      { label: "Buy/Sell", name: "buyOrSell", type: "select", options: ["Buy", "Sell"] },
-      { label: "Lots", name: "lots", type: "number" },
-      { label: "Expiry", name: "expiry", type: "select", options: expiries },
-      { label: "CE/PE", name: "optionType", type: "select", options: ["CE", "PE"] },
-      { label: "Strike Price", name: "strikePrice", type: "number" },
-      { label: "SL%", name: "slPercent", type: "number" },
-      { label: "EP%", name: "epPercent", type: "number" },
-    ].map(({ label, name, type, options }) => (
-      <div key={name}>
-        <label className="block text-gray-700 text-sm">{label}</label>
-        {type === "select" ? (
-          <select
-            value={leg[name]}
-            onChange={(e) => handleLegChange(index, name, e.target.value)}
-            className="shadow border rounded py-2 px-3 text-gray-700 focus:outline-none"
-            required
-          >
-            <option value="">-- Select --</option>
-            {options.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        ) : (
+  <div className="mb-4 p-4 bg-gray-50 rounded-lg shadow-sm">
+    <div className="flex items-center space-x-4">
+      {[
+        { label: "Buy/Sell", name: "buyOrSell", type: "select", options: ["Buy", "Sell"] },
+        { label: "Lots", name: "lots", type: "number" },
+        { label: "Expiry", name: "expiry", type: "select", options: expiries },
+        { label: "CE/PE", name: "optionType", type: "select", options: ["CE", "PE"] },
+        { label: "Strike Price", name: "strikePrice", type: "number" },
+      ].map(({ label, name, type, options }) => (
+        <div key={name} className="w-32">
+          <label className="block text-gray-700 text-sm font-semibold mb-1">{label}</label>
+          {type === "select" ? (
+            <select
+              value={leg[name]}
+              onChange={(e) => handleLegChange(index, name, e.target.value)}
+              className="w-full shadow border rounded-lg py-2 px-3 text-gray-700 focus:ring-2 focus:ring-blue-500"
+              required
+            >
+              <option value="">-- Select --</option>
+              {options.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input
+              type={type}
+              value={leg[name]}
+              onChange={(e) => handleLegChange(index, name, e.target.value)}
+              className="w-full shadow border rounded-lg py-2 px-3 text-gray-700 focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          )}
+        </div>
+      ))}
+
+      <button
+        type="button"
+        onClick={() => handleDeleteLeg(index)}
+        className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
+      >
+        Delete Leg
+      </button>
+    </div>
+
+    {/* Separate line for SL% and EP% */}
+    <div className="flex items-center space-x-4 mt-4">
+      {[
+        { label: "SL%", name: "slPercent", type: "number" },
+        { label: "EP%", name: "epPercent", type: "number" },
+      ].map(({ label, name, type }) => (
+        <div key={name} className="w-32">
+          <label className="block text-gray-700 text-sm font-semibold mb-1">{label}</label>
           <input
             type={type}
             value={leg[name]}
             onChange={(e) => handleLegChange(index, name, e.target.value)}
-            className="shadow border rounded py-2 px-3 text-gray-700 focus:outline-none"
+            className="w-full shadow border rounded-lg py-2 px-3 text-gray-700 focus:ring-2 focus:ring-blue-500"
             required
           />
-        )}
-      </div>
-    ))}
-    <button
-      type="button"
-      onClick={() => handleDeleteLeg(index)}
-      className="bg-red-500 text-white px-4 py-2 rounded-md"
-    >
-      Delete Leg
-    </button>
+        </div>
+      ))}
+    </div>
   </div>
 );
+
 
 
 const CreateStrategy = () => {
@@ -195,6 +216,58 @@ const CreateStrategy = () => {
           </div>
         )}
 
+        {/* Advanced Features Section */}
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-bold mb-2">Advanced Features</label>
+          <FormRadio
+            value={strategy.advancedFeature}
+            onChange={(e) => handleChange("advancedFeature", e.target.value)}
+            options={["ReEntry", "Wait&Trade"]}
+          />
+
+          {strategy.advancedFeature === "ReEntry" && (
+            <div className="mt-4">
+              <label className="block text-gray-700 text-sm font-bold mb-2">No. of Cycles</label>
+              <input
+                type="number"
+                value={strategy.numOfCycles || ""}
+                onChange={(e) => handleChange("numOfCycles", e.target.value)}
+                placeholder="Enter number of cycles"
+                className="shadow border rounded py-2 px-3 text-gray-700 focus:outline-none"
+                required
+              />
+            </div>
+          )}
+
+          {strategy.advancedFeature === "Wait&Trade" && (
+            <div className="mt-4">
+              <label className="block text-gray-700 text-sm font-bold mb-2">Trigger Condition</label>
+              <div className="flex space-x-4">
+                <div>
+                  <label className="block text-gray-700 text-sm">Up by %</label>
+                  <input
+                    type="number"
+                    value={strategy.upByPercent || ""}
+                    onChange={(e) => handleChange("upByPercent", e.target.value)}
+                    placeholder="Enter up by percentage"
+                    className="shadow border rounded py-2 px-3 text-gray-700 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-700 text-sm">Down by %</label>
+                  <input
+                    type="number"
+                    value={strategy.downByPercent || ""}
+                    onChange={(e) => handleChange("downByPercent", e.target.value)}
+                    placeholder="Enter down by percentage"
+                    className="shadow border rounded py-2 px-3 text-gray-700 focus:outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Risk Management Section */}
         <div className="mb-4">
           <label className="block text-gray-700 text-sm font-bold mb-2">Risk Management</label>
@@ -203,7 +276,7 @@ const CreateStrategy = () => {
               <label className="block text-gray-700 text-sm">Exit when overall profit exceeds</label>
               <input
                 type="number"
-                value={strategy.riskManagement.profitExit}
+                value={strategy.riskManagement.profitExit || ""}
                 onChange={(e) => handleRiskManagementChange("profitExit", e.target.value)}
                 placeholder="Enter profit percentage"
                 className="shadow border rounded py-2 px-3 text-gray-700 focus:outline-none"
@@ -213,22 +286,103 @@ const CreateStrategy = () => {
               <label className="block text-gray-700 text-sm">Exit when overall loss exceeds</label>
               <input
                 type="number"
-                value={strategy.riskManagement.lossExit}
+                value={strategy.riskManagement.lossExit || ""}
                 onChange={(e) => handleRiskManagementChange("lossExit", e.target.value)}
                 placeholder="Enter loss percentage"
                 className="shadow border rounded py-2 px-3 text-gray-700 focus:outline-none"
               />
             </div>
             <div className="flex flex-col">
-              <label className="block text-gray-700 text-sm">Exit time</label>
+              <label className="block text-gray-700 text-sm">No Entry After</label>
               <TimeInput
                 label=""
-                value={strategy.riskManagement.exitTime}
+                value={strategy.riskManagement.exitTime || ""}
                 onChange={(e) => handleRiskManagementChange("exitTime", e.target.value)}
               />
             </div>
           </div>
+
+          {/* Profit Trailing Options */}
+          <div className="mt-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2">Profit Trailing</label>
+            <FormRadio
+              value={strategy.riskManagement.profitTrailingOption}
+              onChange={(e) => handleRiskManagementChange("profitTrailingOption", e.target.value)}
+              options={["No trailing", "Trail Profit", "Lock&Trail"]}
+            />
+
+            {strategy.riskManagement.profitTrailingOption === "Trail Profit" && (
+              <div className="mt-4 flex space-x-4">
+                <div className="flex flex-col">
+                  <label className="block text-gray-700 text-sm">On every increase of</label>
+                  <input
+                    type="number"
+                    value={strategy.riskManagement.trailIncrease || ""}
+                    onChange={(e) => handleRiskManagementChange("trailIncrease", e.target.value)}
+                    placeholder="Enter increase percentage"
+                    className="shadow border rounded py-2 px-3 text-gray-700 focus:outline-none"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="block text-gray-700 text-sm">Trail profit by</label>
+                  <input
+                    type="number"
+                    value={strategy.riskManagement.trailProfitBy || ""}
+                    onChange={(e) => handleRiskManagementChange("trailProfitBy", e.target.value)}
+                    placeholder="Enter trailing amount"
+                    className="shadow border rounded py-2 px-3 text-gray-700 focus:outline-none"
+                  />
+                </div>
+              </div>
+            )}
+
+            {strategy.riskManagement.profitTrailingOption === "Lock&Trail" && (
+              <div className="mt-4 flex space-x-4">
+                <div className="flex flex-col">
+                  <label className="block text-gray-700 text-sm">If profit reaches</label>
+                  <input
+                    type="number"
+                    value={strategy.riskManagement.lockProfitThreshold || ""}
+                    onChange={(e) => handleRiskManagementChange("lockProfitThreshold", e.target.value)}
+                    placeholder="Enter profit threshold"
+                    className="shadow border rounded py-2 px-3 text-gray-700 focus:outline-none"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="block text-gray-700 text-sm">Lock profit at</label>
+                  <input
+                    type="number"
+                    value={strategy.riskManagement.lockProfitAt || ""}
+                    onChange={(e) => handleRiskManagementChange("lockProfitAt", e.target.value)}
+                    placeholder="Enter lock amount"
+                    className="shadow border rounded py-2 px-3 text-gray-700 focus:outline-none"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="block text-gray-700 text-sm">On every increase of</label>
+                  <input
+                    type="number"
+                    value={strategy.riskManagement.lockTrailIncrease || ""}
+                    onChange={(e) => handleRiskManagementChange("lockTrailIncrease", e.target.value)}
+                    placeholder="Enter increase percentage"
+                    className="shadow border rounded py-2 px-3 text-gray-700 focus:outline-none"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="block text-gray-700 text-sm">Trail profit by</label>
+                  <input
+                    type="number"
+                    value={strategy.riskManagement.lockTrailProfitBy || ""}
+                    onChange={(e) => handleRiskManagementChange("lockTrailProfitBy", e.target.value)}
+                    placeholder="Enter trailing amount"
+                    className="shadow border rounded py-2 px-3 text-gray-700 focus:outline-none"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
         </div>
+
 
         {/* Strategy Name Input */}
         <div className="mb-4">

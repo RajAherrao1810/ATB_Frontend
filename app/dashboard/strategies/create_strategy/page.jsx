@@ -99,7 +99,39 @@ const CreateStrategy = () => {
       lossExit: "",
       exitTime: "15:15",
     },
+    advancedFeatures: {
+      cycles: "",
+      wait_trade: { up_percentage: "", down_percentage: ""},
+    },
   });
+
+  const AdvancedFeature = (field, value, nestedField = null) => {
+    setStrategy((prev) => {
+      if (nestedField === "wait_trade") {
+        return {
+          ...prev,
+          advancedFeatures: {
+            ...prev.advancedFeatures,
+            wait_trade: {
+              ...prev.advancedFeatures.wait_trade,
+              [field]: value,
+            },
+          },
+        };
+      } else if (nestedField === "ReEntry") {
+        return {
+          ...prev,
+          advancedFeatures: {
+            ...prev.advancedFeatures,
+            [field]: value,
+          },
+        };
+      }
+      return { ...prev, [field]: value };
+    });
+  };
+  
+  
 
   const handleChange = (field, value) => {
     setStrategy((prev) => ({ ...prev, [field]: value }));
@@ -230,8 +262,8 @@ const CreateStrategy = () => {
               <label className="block text-gray-700 text-sm font-bold mb-2">No. of Cycles</label>
               <input
                 type="number"
-                value={strategy.numOfCycles || ""}
-                onChange={(e) => handleChange("numOfCycles", e.target.value)}
+                value={strategy.advancedFeatures.cycles || ""}
+                onChange={(e) => AdvancedFeature("cycles", e.target.value, "ReEntry")}
                 placeholder="Enter number of cycles"
                 className="shadow border rounded py-2 px-3 text-gray-700 focus:outline-none"
                 required
@@ -247,8 +279,8 @@ const CreateStrategy = () => {
                   <label className="block text-gray-700 text-sm">Up by %</label>
                   <input
                     type="number"
-                    value={strategy.upByPercent || ""}
-                    onChange={(e) => handleChange("upByPercent", e.target.value)}
+                    value={strategy.advancedFeatures.wait_trade.up_percentage || ""}
+                    onChange={(e) => AdvancedFeature("up_percentage", e.target.value, "wait_trade")}
                     placeholder="Enter up by percentage"
                     className="shadow border rounded py-2 px-3 text-gray-700 focus:outline-none"
                   />
@@ -257,14 +289,15 @@ const CreateStrategy = () => {
                   <label className="block text-gray-700 text-sm">Down by %</label>
                   <input
                     type="number"
-                    value={strategy.downByPercent || ""}
-                    onChange={(e) => handleChange("downByPercent", e.target.value)}
+                    value={strategy.advancedFeatures.wait_trade.down_percentage || ""}
+                    onChange={(e) => AdvancedFeature("down_percentage", e.target.value, "wait_trade")}
                     placeholder="Enter down by percentage"
                     className="shadow border rounded py-2 px-3 text-gray-700 focus:outline-none"
                   />
                 </div>
               </div>
             </div>
+          
           )}
         </div>
 

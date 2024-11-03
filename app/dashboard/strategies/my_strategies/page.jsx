@@ -8,13 +8,18 @@ const MyStrategiesPage = () => {
   const searchParams = useSearchParams();
   const strategyId = searchParams.get("strategyId");
 
-  const [strategies, setStrategies] = useState(() => {
-    const savedStrategies = localStorage.getItem("strategies");
-    return savedStrategies ? JSON.parse(savedStrategies) : [];
-  });
+  const [strategies, setStrategies] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [menuOpen, setMenuOpen] = useState(null); // To track which menu is open
+
+  // Load strategies from localStorage only on the client side
+  useEffect(() => {
+    const savedStrategies = localStorage.getItem("strategies");
+    if (savedStrategies) {
+      setStrategies(JSON.parse(savedStrategies));
+    }
+  }, []);
 
   useEffect(() => {
     const fetchStrategy = async () => {
@@ -39,7 +44,6 @@ const MyStrategiesPage = () => {
     fetchStrategy();
   }, [strategyId, strategies]);
 
-
   const handleDelete = async (id) => {
     try {
       // Update local state before deleting on server
@@ -47,46 +51,34 @@ const MyStrategiesPage = () => {
       setStrategies(updatedStrategies);
       localStorage.setItem("strategies", JSON.stringify(updatedStrategies));
       console.log(`deleted strategy`);
-  
+
       // Send DELETE request to FastAPI server
       await axios.delete(`http://localhost:8000/strategy/${id}`);
-      
+
       // Close menu after deletion
       setMenuOpen(null);
-  
+
       console.log(`Strategy with ID ${id} successfully deleted from the database.`);
     } catch (error) {
       setError("Error deleting strategy from the server");
       console.error("Error deleting strategy:", error);
     }
   };
-  
-  const handleDeploy = async (strategy) => {
+
+  const handleDeploy = async (deployedStrategy) => {
+    console.log("Submitting strategy:", deployedStrategy);
+
     try {
-      await axios.post("http://localhost:8000/deploy_strategy", {
-        strategyName: "",
-        description: "",
-        parameters: "",
-        selectedInstrument: "",
-        strategyType: "",
-        orderType: "",
-        entryTime: "09:15",
-        exitTime: "15:15",
-        legs: [],
-        riskManagement: {
-          profitExit: "",
-          lossExit: "",
-          exitTime: "15:15",
-        }
-      });
-      router.push(`/dashboard/strategies/deployed_strategies`);
-      console.log(`Strategy with ID ${strategy._id} deployed successfully.`);
+      const response = await axios.post("http://localhost:8000/deployed_strategies", deployedStrategy);
+      const { id } = response.data;
+      console.log("Strategy Created:");
+
+      // Pass the `id` to Deploy_StrategiesPage
+      router.push(`/dashboard/strategies/deployed_strategies?strategyId=${id}`);
     } catch (error) {
-      setError("Error deploying strategy");
-      console.error("Error deploying strategy:", error);
+      console.error("Error creating strategy:", error);
     }
   };
-  
 
   const toggleMenu = (id) => {
     setMenuOpen(menuOpen === id ? null : id); // Toggle menu for the specific strategy
@@ -140,12 +132,12 @@ const MyStrategiesPage = () => {
 
               {/* Deploy Button */}
               <div className="flex space-x-2 mt-4">
-              <button
-                onClick={() => handleDeploy(strategy)}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm font-medium"
-              >
-                Deploy Strategy
-              </button>
+                <button
+                  onClick={() => handleDeploy(strategy)}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm font-medium"
+                >
+                  Deploy Strategy
+                </button>
                 <button
                   onClick={() => console.log(`Backtesting strategy with ID: ${strategy._id}`)}
                   className="w-full bg-blue-600 hover:bg-gray-700 text-white py-2 px-4 rounded-md text-sm font-medium"

@@ -74,7 +74,7 @@ const MyStrategiesPage = () => {
       console.log("Strategy Created:");
 
       // Pass the `id` to Deploy_StrategiesPage
-      router.push(`/dashboard/strategies/deployed_strategies?strategyId=${id}`);
+      router.push(`/dashboard/strategies/deployed_strategies`);
     } catch (error) {
       console.error("Error creating strategy:", error);
     }
@@ -110,7 +110,29 @@ const MyStrategiesPage = () => {
                         Delete
                       </button>
                       <button
-                        onClick={() => console.log("Edit functionality to be implemented")}
+                        onClick={() => router.push({
+                          pathname: "/create_strategy",
+                          query: {
+                            strategyName: "",
+                            description: "",
+                            parameters: "",
+                            selectedInstrument: "",
+                            strategyType: "",
+                            orderType: "",
+                            entryTime: "09:15",
+                            exitTime: "15:15",
+                            legs: [],
+                            riskManagement: {
+                              profitExit: "",
+                              lossExit: "",
+                              exitTime: "15:15",
+                            },
+                            advancedFeatures: {
+                              cycles: "",
+                              wait_trade: { up_percentage: "", down_percentage: ""},
+                            },
+                          }
+                        })}
                         className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
                       >
                         Edit

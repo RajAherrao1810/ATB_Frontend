@@ -11,6 +11,12 @@ const expiries = {
   // Add more expiries for each instrument
 };
 
+const strikePriceOptions = [
+  ...Array.from({ length: 9 }, (_, i) => `ITM${9 - i}`), // ITM9 to ITM1
+  "ATM",
+  ...Array.from({ length: 9 }, (_, i) => `OTM${i + 1}`),   // OTM1 to OTM10
+];
+
 // Reusable Leg Form Component
 const LegForm = ({ leg, index, handleLegChange, handleDeleteLeg, expiries }) => (
   <div className="mb-4 p-4 bg-gray-50 rounded-lg shadow-sm">
@@ -20,7 +26,7 @@ const LegForm = ({ leg, index, handleLegChange, handleDeleteLeg, expiries }) => 
         { label: "Lots", name: "lots", type: "number" },
         { label: "Expiry", name: "expiry", type: "select", options: expiries },
         { label: "CE/PE", name: "optionType", type: "select", options: ["CE", "PE"] },
-        { label: "Strike Price", name: "strikePrice", type: "number" },
+        { label: "Strike Price", name: "strikePrice", type: "select", options: strikePriceOptions },
       ].map(({ label, name, type, options }) => (
         <div key={name} className="w-32">
           <label className="block text-gray-700 text-sm font-semibold mb-1">{label}</label>
@@ -97,6 +103,7 @@ const CreateStrategy = () => {
     riskManagement: {
       profitExit: "",
       lossExit: "",
+      profitTrailingOption:"",
       exitTime: "15:15",
     },
     advancedFeatures: {
@@ -248,6 +255,7 @@ const CreateStrategy = () => {
           </div>
         )}
 
+
         {/* Advanced Features Section */}
         <div className="mb-4">
           <label className="block text-gray-700 text-sm font-bold mb-2">Advanced Features</label>
@@ -311,7 +319,7 @@ const CreateStrategy = () => {
                 type="number"
                 value={strategy.riskManagement.profitExit || ""}
                 onChange={(e) => handleRiskManagementChange("profitExit", e.target.value)}
-                placeholder="Enter profit percentage"
+                placeholder="Enter profit amount"
                 className="shadow border rounded py-2 px-3 text-gray-700 focus:outline-none"
               />
             </div>
@@ -321,7 +329,7 @@ const CreateStrategy = () => {
                 type="number"
                 value={strategy.riskManagement.lossExit || ""}
                 onChange={(e) => handleRiskManagementChange("lossExit", e.target.value)}
-                placeholder="Enter loss percentage"
+                placeholder="Enter loss amount"
                 className="shadow border rounded py-2 px-3 text-gray-700 focus:outline-none"
               />
             </div>
@@ -387,7 +395,7 @@ const CreateStrategy = () => {
                     type="number"
                     value={strategy.riskManagement.lockProfitAt || ""}
                     onChange={(e) => handleRiskManagementChange("lockProfitAt", e.target.value)}
-                    placeholder="Enter lock amount"
+                    placeholder="Lock profit at"
                     className="shadow border rounded py-2 px-3 text-gray-700 focus:outline-none"
                   />
                 </div>
@@ -397,7 +405,7 @@ const CreateStrategy = () => {
                     type="number"
                     value={strategy.riskManagement.lockTrailIncrease || ""}
                     onChange={(e) => handleRiskManagementChange("lockTrailIncrease", e.target.value)}
-                    placeholder="Enter increase percentage"
+                    placeholder="Enter percentage value"
                     className="shadow border rounded py-2 px-3 text-gray-700 focus:outline-none"
                   />
                 </div>
@@ -407,7 +415,7 @@ const CreateStrategy = () => {
                     type="number"
                     value={strategy.riskManagement.lockTrailProfitBy || ""}
                     onChange={(e) => handleRiskManagementChange("lockTrailProfitBy", e.target.value)}
-                    placeholder="Enter trailing amount"
+                    placeholder="Enter percentage value"
                     className="shadow border rounded py-2 px-3 text-gray-700 focus:outline-none"
                   />
                 </div>

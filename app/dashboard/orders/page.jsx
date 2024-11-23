@@ -1,32 +1,27 @@
-"use client"; // Ensures this is a client-side component
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from "react";
 
 const Orders = () => {
-  // Static data for the positions (you can replace this with real data later)
-  const [positions] = useState([
-    {
-      symbol: 'AAPL',
-      quantity: 100,
-      avgPrice: 145.50,
-      currentPrice: 150.00,
-      pl: 450.00,
-    },
-    {
-      symbol: 'TSLA',
-      quantity: 50,
-      avgPrice: 700.00,
-      currentPrice: 680.00,
-      pl: -1000.00,
-    },
-    {
-      symbol: 'GOOGL',
-      quantity: 20,
-      avgPrice: 2800.00,
-      currentPrice: 2900.00,
-      pl: 2000.00,
-    },
-  ]);
+  const [positions, setPositions] = useState([]);
+
+  // Fetch orders from the FastAPI backend
+  const fetchOrders = async () => {
+    try {
+      const response = await fetch("http://localhost:8000/order_book");
+      const data = await response.json();
+      setPositions(data);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+    }
+  };
+
+  // Periodically fetch data every second
+  useEffect(() => {
+    fetchOrders(); // Initial fetch
+    const interval = setInterval(fetchOrders, 1000); // Fetch every 1 second
+    return () => clearInterval(interval); // Clean up interval on component unmount
+  }, []);
 
   // Calculate total profit/loss
   const totalPL = positions.reduce((acc, position) => acc + position.pl, 0);
@@ -40,10 +35,10 @@ const Orders = () => {
         <h2 className="text-xl font-bold">Total Profit/Loss</h2>
         <p
           className={`text-2xl font-semibold ${
-            totalPL >= 0 ? 'text-green-500' : 'text-red-500'
+            totalPL >= 0 ? "text-green-500" : "text-red-500"
           }`}
         >
-          {totalPL >= 0 ? '+' : ''}
+          {totalPL >= 0 ? "+" : ""}
           {totalPL.toFixed(2)}
         </p>
       </div>
@@ -72,10 +67,10 @@ const Orders = () => {
                 <td className="py-3 px-6">${position.currentPrice.toFixed(2)}</td>
                 <td
                   className={`py-3 px-6 font-semibold ${
-                    position.pl >= 0 ? 'text-green-500' : 'text-red-500'
+                    position.pl >= 0 ? "text-green-500" : "text-red-500"
                   }`}
                 >
-                  {position.pl >= 0 ? '+' : ''}
+                  {position.pl >= 0 ? "+" : ""}
                   {position.pl.toFixed(2)}
                 </td>
               </tr>

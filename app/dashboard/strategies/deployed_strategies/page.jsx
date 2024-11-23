@@ -1,4 +1,4 @@
-"use client"; 
+"use client";
 
 import React, { useState, useEffect } from "react";
 
@@ -6,6 +6,7 @@ export default function StrategiesPage() {
   const [strategies, setStrategies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [totalProfit, setTotalProfit] = useState(0); // State for total profit
 
   // Function to fetch strategies
   async function fetchStrategies() {
@@ -18,6 +19,13 @@ export default function StrategiesPage() {
       }
       const data = await res.json();
       setStrategies(data);
+
+      // Calculate total profit
+      const total = data.reduce(
+        (sum, strategy) => sum + strategy.overall_profit_or_loss,
+        0
+      );
+      setTotalProfit(total);
     } catch (err) {
       setError(err.message);
     }
@@ -45,7 +53,29 @@ export default function StrategiesPage() {
   }
 
   return (
-    <div className="grid grid-cols-1  gap-6 p-6 bg-gray-100">
+    <div className="grid grid-cols-1 gap-6 p-6 bg-gray-100">
+      {/* Total Profit Display */}
+      <div className="p-6 bg-blue-100 border border-blue-300 rounded-lg shadow-md">
+        <div className="flex justify-between items-center">
+          {/* Header */}
+          <h1 className="text-2xl font-bold text-blue-800">Deployed Strategies</h1>
+          
+          {/* Profit Amount */}
+          <span
+            className={`text-2xl font-semibold ${
+              totalProfit > 0
+                ? "text-green-600"
+                : totalProfit < 0
+                ? "text-red-600"
+                : "text-gray-600"
+            }`}
+          >
+            P/L: {totalProfit > 0 ? `+₹${totalProfit}` : `₹${totalProfit}`}
+          </span>
+        </div>
+      </div>
+
+
       {strategies.map((strategy) => (
         <div
           key={strategy._id}
@@ -70,7 +100,7 @@ export default function StrategiesPage() {
                 : `₹${strategy.overall_profit_or_loss}`}
             </span>
           </div>
-  
+
           {/* Instrument Name, Status, and Button */}
           <div className="flex justify-between items-center text-gray-600">
             <span className="font-medium">Instrument: {strategy.selected_instrument}</span>
@@ -97,5 +127,5 @@ export default function StrategiesPage() {
         </div>
       ))}
     </div>
-  );  
+  );
 }
